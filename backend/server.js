@@ -2,11 +2,15 @@ const express = require("express");
 const Pusher = require("pusher");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const uuid = require("short-unique-id")
+const uuid = require("short-unique-id");
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://chimptype.onrender.com",
+  }),
+);
 app.use(express.json());
 
 const pusher = new Pusher({
@@ -109,7 +113,6 @@ puts "Done looping!"
   // pusher.trigger(`${roomId}`, "code-block", {
   //   randomBlock
   // })
-
 }
 
 const startTimer = (roomId, duration = 10) => {
@@ -130,7 +133,6 @@ const startTimer = (roomId, duration = 10) => {
 };
 
 app.post("/find-match", (req, res) => {
-
   const { playerId } = req.body;
 
   if (!playerId) {
@@ -138,7 +140,7 @@ app.post("/find-match", (req, res) => {
   }
 
   if (waitingPlayer && waitingPlayer.id !== playerId) {
-    const roomtag = new uuid({length: 10})
+    const roomtag = new uuid({ length: 10 });
     const roomId = `room-${roomtag.rnd()}`;
     const players = [waitingPlayer.id, playerId];
 
@@ -151,18 +153,16 @@ app.post("/find-match", (req, res) => {
     pusher.trigger(`temp-${waitingPlayer.id}`, "match-start", {
       roomId,
       players,
-      randomBlock
+      randomBlock,
     });
 
     pusher.trigger(`${roomId}`, "code-block", {
-      randomBlock
-    })
+      randomBlock,
+    });
 
     const opponentId = waitingPlayer.id;
 
-
     startTimer(roomId, 10);
-
 
     res.json({ matched: true, roomId, opponentId });
   } else {
@@ -178,18 +178,17 @@ app.post("/update-score", (req, res) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-
   // Send score to opponent's channel
   pusher.trigger(`${roomId}`, "update-score", {
     playerId,
-    score
+    score,
   });
 
   res.send({ success: true });
 });
 
 app.get("/hit", (req, res) => {
-  res.json({message: "hello from Chimp & Co."})
-})
+  res.json({ message: "hello from Chimp & Co." });
+});
 
 app.listen(4000, () => console.log("Server running on port 4000"));

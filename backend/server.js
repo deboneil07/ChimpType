@@ -188,7 +188,7 @@ app.post("/update-score", (req, res) => {
 });
 
 app.get("/hit", (req, res) => {
-  res.json({ message: "hello from Chimp & Co." });
+  res.status(200).send("Hello from Chimp & Co. !!");
 });
 
 app.listen(4000, () => console.log("Server running on port 4000"));

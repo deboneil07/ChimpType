@@ -163,6 +163,7 @@ app.post("/find-match", (req, res) => {
     const opponentId = waitingPlayer.id;
     waitingPlayer = null
 
+    
     startTimer(roomId, 66);
 
     res.json({ matched: true, roomId, opponentId });

@@ -1,0 +1,15 @@
+{
+  "name": "ChimpType",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "install-server": "cd backend && npm install",
+    "start-server": "cd backend && node server.js",
+    "install-client": "cd frontend2 && npm install",
+    "build-client": "cd frontend2 && npm run build",
+    "start-client": "cd frontend2 && npm run start"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

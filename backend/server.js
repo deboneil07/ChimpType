@@ -162,7 +162,7 @@ app.post("/find-match", (req, res) => {
 
     const opponentId = waitingPlayer.id;
 
-    startTimer(roomId, 10);
+    startTimer(roomId, 66);
 
     res.json({ matched: true, roomId, opponentId });
   } else {

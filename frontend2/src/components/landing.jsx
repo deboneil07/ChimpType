@@ -66,7 +66,10 @@ const LandingPage = () => {
             Race your friends. Type like a chimp.
           </p>
           <button
-            onClick={login}
+            onClick={() =>
+              login({
+                connectionId: import.meta.env.VITE_KINDE_CONN_ID,
+              })}
             className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
           >
             Log In

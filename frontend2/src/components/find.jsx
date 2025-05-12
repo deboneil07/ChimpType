@@ -6,6 +6,43 @@ import { useCodeStore, useStore, useUserStore, useMatchStore } from "../utils/zu
 import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 import { useAuth } from "../hooks/auth";
 import LeaderBoard from "./leaderboard";
+import BananaBackground from "./BananaBackground";
+
+
+const MobileSidebar = ({ isOpen, onClose, children }) => {
+  return (
+    <>
+   
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+
+      <div 
+        className={`fixed top-0 right-0 h-full w-80 bg-[#1a1a1a] border-l border-yellow-400/20 transform transition-transform duration-300 ease-in-out z-50 lg:hidden
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="p-4 flex justify-between items-center border-b border-yellow-400/20">
+          <h2 className="text-yellow-400 font-bold">Leaderboard</h2>
+          <button 
+            onClick={onClose}
+            className="text-yellow-400/60 hover:text-yellow-400 hover:bg-yellow-400/10 rounded-full p-2 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="h-[calc(100%-4rem)] overflow-y-auto">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+};
 
 export default function FindMatch() {
   const { logout } = useKindeAuth();
@@ -15,6 +52,8 @@ export default function FindMatch() {
   const { setStats } = useUserStore();
 
   const { setMatchDetails } = useMatchStore();
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -132,6 +171,7 @@ export default function FindMatch() {
 
   return (
     <div className="fixed inset-0 bg-[#0f0f0f] text-[#f5f5f5] font-mono flex flex-col items-center justify-center p-6">
+      <BananaBackground />
       {error ? (
         <div className="flex flex-col items-center justify-center space-y-6">
           <img src="/chimp-logo.webp" alt="Chimp Logo" className="w-60 h-60" />
@@ -167,29 +207,52 @@ export default function FindMatch() {
         </div>
       ) : (
         <>
-          <div className="absolute top-4 left-4 flex items-center gap-3">
-            <div className="flex items-center gap-3 border-2 border-yellow-300 rounded-lg px-4 py-2">
-              <div className="text-yellow-300 font-semibold hidden sm:block">
-                {`chimp-${user.id}`}
+          {/* Top Bar - Always visible */}
+          <div className="fixed top-0 left-0 right-0 bg-[#0f0f0f]/80 backdrop-blur-sm border-b border-yellow-400/20 z-30 px-4 py-2 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 border-2 border-yellow-300 rounded-lg px-4 py-2">
+                <div className="text-yellow-300 font-semibold text-sm sm:text-base truncate max-w-[200px] sm:max-w-none">
+                  {`chimp-${user.id}`}
+                </div>
               </div>
             </div>
+            
+            {/* Leaderboard Toggle Button - Mobile Only */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors bg-yellow-400/10 hover:bg-yellow-400/20 rounded-lg px-3 py-2"
+            >
+              <span className="text-sm font-semibold">Top Chimps</span>
+              <span className="text-xl">🐒</span>
+            </button>
           </div>
-          <div className="absolute bottom-4 left-4 text-xl font-bold text-yellow-300 text-center space-y-4">
+
+          {/* Sign Out Button */}
+          <div className="fixed bottom-4 left-4 text-xl font-bold text-yellow-300 text-center space-y-4">
             <button
               onClick={() => logout()}
               type="button"
-              className="border-2 border-yellow-300 rounded-lg px-4 py-2 text-yellow-300 hover:bg-yellow-500 hover:text-black transition"
+              className="border-2 border-yellow-300 rounded-lg px-4 py-2 text-yellow-300 hover:bg-yellow-500 hover:text-black transition text-sm sm:text-base"
             >
               Sign out
             </button>
           </div>
 
-          <div className="absolute right-8 top-10">
+          {/* Leaderboard - Desktop */}
+          <div className="hidden lg:block fixed right-8 top-24">
             <LeaderBoard />
           </div>
 
+          {/* Leaderboard - Mobile Sidebar */}
+          <MobileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}>
+            <div className="p-4">
+              <LeaderBoard />
+            </div>
+          </MobileSidebar>
+
+          {/* Main Content */}
           <div
-            className={`max-w-2xl w-full space-y-8 transition-all duration-700 transform
+            className={`max-w-2xl w-full space-y-8 transition-all duration-700 transform mt-16
           ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
           >
             <div className="text-center space-y-4">

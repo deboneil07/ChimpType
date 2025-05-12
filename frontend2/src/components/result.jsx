@@ -5,6 +5,7 @@ import { useUserStore, useMatchStore } from "../utils/zustand";
 import { api } from "../utils/axios";
 import { useScore } from "../utils/zustand";
 import { pusher } from "../utils/pusher";
+import BananaBackground from "./BananaBackground";
 
 export default function Result() {
   const [isVisible, setIsVisible] = useState(false);
@@ -127,6 +128,7 @@ export default function Result() {
 
   return (
     <div className="fixed inset-0 bg-[#0f0f0f] text-[#f5f5f5] font-mono flex items-center justify-center p-4">
+      <BananaBackground />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
 
         <div className={`rounded-xl p-6 shadow-xl border border-yellow-400/20 transition-all duration-500 transform relative ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>

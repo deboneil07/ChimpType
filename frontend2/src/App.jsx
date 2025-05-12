@@ -8,7 +8,7 @@ import LeaderBoard from "./components/leaderboard.jsx";
 
 function App() {
   useEffect(() => {
-    window.location.href === "https://chimptype.kinde.com/logged-out" ? window.location.href = "http://localhost:5173" : null
+    window.location.href === "https://chimptype.kinde.com/logged-out" ? window.location.href = "https://chimptype.onrender.com" : null
   }, [])
 
   return (

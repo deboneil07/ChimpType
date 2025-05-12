@@ -6,3 +6,10 @@
 <p align="center">Race your friends type like a chimp</p>
 
 
+<p align="center" >
+  <br>
+  <br>
+  <img src= "https://github.com/user-attachments/assets/737aca99-29b4-4395-85c6-215d56b74417"/>
+</p>
+
+

@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+
 export const useStore = create((set) => ({
   timer: 0,
   setTimer: (time) => set(() => ({ timer: time })),

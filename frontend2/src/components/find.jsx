@@ -66,8 +66,8 @@ const DifficultyModal = ({ isOpen, onClose, onSelectDifficulty }) => {
 
   return (
     <div className="fixed inset-0 z-[60]">
-      <div 
-        className="absolute inset-0 backdrop-blur-[2px]" 
+      <div
+        className="absolute inset-0 backdrop-blur-[2px]"
         onClick={onClose}
       />
       <div className="absolute inset-0 flex items-center justify-center">
@@ -127,7 +127,7 @@ export default function FindMatch() {
   const { setMatchDetails } = useMatchStore();
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [type, setType] = useState(null);
+  // const [type, setType] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -143,6 +143,8 @@ export default function FindMatch() {
   const [countdown, setCountdown] = useState(5);
   const [showContent, setShowContent] = useState(false);
 
+  const [gameType, setGameType] = useState("");
+
   const { setTimer } = useStore();
   const { setCode } = useCodeStore();
   const channelRef = useRef(null);
@@ -153,36 +155,46 @@ export default function FindMatch() {
   useEffect(() => {
     setShowContent(true);
   }, []);
-  
+
   async function findBot(difficultyLevel) {
-    setType("bot");
     setDifficulty(difficultyLevel);
     const newPlayerId = "bot-chimp-" + user.id;
     setPlayerId(newPlayerId);
-    
+
     try {
       const response = await api.post("/bot-find-match", {
         playerId: newPlayerId,
         difficulty: difficultyLevel
       });
-      
+
+      console.log(response)
+
       if(response.data.matched) {
         const newRoomId = response.data.roomId;
         const newOpponentId = response.data.opponentId;
 
+        setCode(response.data?.randomBlock.code);
+        console.log(response.data)
+        setMatchOpponentDetails({
+          matchOpponentWpm: response.data.botScore.wpm,
+          matchOpponentCorrect: response.data.botScore.correct,
+          matchOpponentError: response.data.botScore.error,
+        })
+
         setRoomId(newRoomId);
         setOpponentId(newOpponentId);
+        // console.log(newRoomId, newOpponentId, newPlayerId);
 
-        subscribeToRoom(newRoomId, newPlayerId, newOpponentId);
+        subscribeToRoom(newRoomId, newPlayerId, newOpponentId, 'bot');
       }
-      
+
     } catch(error) {
       console.error("Matchmaking failed", error);
     }
   }
 
   async function findMatch() {
-    setType("user")
+    // setType("user")
     const newPlayerId = "chimp-" + user.id;
     setPlayerId(newPlayerId);
 
@@ -198,7 +210,7 @@ export default function FindMatch() {
         setRoomId(newRoomId);
         setOpponentId(newOpponentId);
 
-        subscribeToRoom(newRoomId, newPlayerId, newOpponentId);
+        subscribeToRoom(newRoomId, newPlayerId, newOpponentId, 'user');
       } else {
         waitForMatch(newPlayerId);
       }
@@ -225,9 +237,11 @@ export default function FindMatch() {
     });
   }
 
-  function subscribeToRoom(room, player, opponent) {
+  function subscribeToRoom(room, player, opponent, type) {
     const channel = pusher.subscribe(room);
     channelRef.current = channel;
+
+    console.log(room, player, opponent)
 
     setMatchDetails({
       playerId: player,
@@ -235,25 +249,21 @@ export default function FindMatch() {
       opponentId: opponent,
     });
 
+    type === 'bot' ? setGameType('bot') : setGameType('user')
 
-    if(type === "bot") {
-      channel.bind("bot-match-start", (data) => {
-        setMatchOpponentDetails({
-          matchOpponentWpm: data.score.wpm,
-          matchOpponentCorrect: data.score.correct,
-          matchOpponentError: data.score.error,
-        })
-      })
-      
+    if(type === 'bot') {
+      console.log("before randomblock receive")
+      channel.bind("bot-match-start")
     }
-    
-    
+    else {
+      channel.bind("match-start");
+    }
+
+
 
     channel.bind("timer-update", (data) => {
       setTimer(data.timeLeft);
     });
-    
-    
 
     channel.bind("code-block", (data) => {
       setCode(data?.randomBlock.code);
@@ -278,7 +288,7 @@ export default function FindMatch() {
   }, [playerId, opponentId, roomId]);
 
   if (gameStarted) {
-    return <Play playerId={playerId} opponentId={opponentId} roomId={roomId} type={type} />;
+    return <Play playerId={playerId} opponentId={opponentId} roomId={roomId} type={gameType} />;
   }
 
   return (
@@ -384,7 +394,7 @@ export default function FindMatch() {
               >
                 {playerId ? "Finding Match..." : "Find Match"}
               </button>
-              
+
               <button
                 disabled={playerId}
                 onClick={() => setShowDifficultyModal(true)}

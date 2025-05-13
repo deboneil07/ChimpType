@@ -29,7 +29,7 @@ export default function Result() {
 
     if (channel) {
       channel.unbind_all();
-      channel.unsubscribe();
+      pusher.unsubscribe(matchRoomId)
     }
 
     // Clear match data from Zustand store
@@ -59,7 +59,7 @@ export default function Result() {
     const updateScore = async () => {
       await api.post("/update-score", {
         roomId: matchRoomId,
-        playerId: playerId,  
+        playerId: playerId,
         score: {
           wpm: matchPlayerWpm,
           correct: matchPlayerCorrect,

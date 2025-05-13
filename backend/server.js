@@ -115,6 +115,37 @@ puts "Done looping!"
   // })
 }
 
+function generateScore(min, max) {
+  min = Math.ceil(min);
+  max = Math.ceil(max);
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function setBotScore(difficulty) {
+  if (difficulty == "Noob Chimp") {
+    wpm = generateScore(10, 50);
+    correct = generateScore(10, 50);
+    error = generateScore(10, 50);
+  }
+  else if (difficulty == "Veteran Orangutan") {
+    wpm = generateScore(40, 70);
+    correct = generateScore(40, 70);
+    error = generateScore(40, 70);
+  }
+  else if (difficulty == "King Kong") {
+    wpm = generateScore(60, 110);
+    correct = generateScore(60, 110);
+    error = generateScore(60, 110);
+  }
+  const botScore = {
+    wpm: wpm,
+    correct: correct,
+    error: error,
+  }
+
+  return botScore;
+}
+
 const startTimer = (roomId, duration = 10) => {
   let timeLeft = duration;
 
@@ -161,9 +192,7 @@ app.post("/find-match", (req, res) => {
     });
 
     const opponentId = waitingPlayer.id;
-    waitingPlayer = null
-
-    
+    waitingPlayer = null;
     startTimer(roomId, 66);
 
     res.json({ matched: true, roomId, opponentId });
@@ -173,6 +202,33 @@ app.post("/find-match", (req, res) => {
   }
 });
 
+app.post("/bot-find-match", (req, res) => {
+  const { playerId, difficulty } = req.body;
+
+  if (!playerId) return res.status(400).json({message: "no playerid recieved!"})
+
+  const roomtag = new uuid({ length: 10 });
+  const botRoomId = `bot-room-${roomtag.rnd()}`;
+  const botIdtag = new uuid({ length: 10 });
+  const botId = `bot-chimp-${botIdtag}`;
+  const players = [botId, playerId]
+  const randomBlock = getRandomCodeBlock();
+
+  const botScore = setBotScore(difficulty);
+
+  pusher.trigger(botRoomId, "bot-match-start", {
+    botRoomId,
+    players,
+    randomBlock,
+    botScore
+  });
+
+  startTimer(botRoomId, 66);
+
+  res.json({ matched: true, botRoomId, botId,  });
+
+})
+
 app.post("/update-score", (req, res) => {
   const { roomId, playerId, score } = req.body;
 
@@ -180,7 +236,6 @@ app.post("/update-score", (req, res) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  // Send score to opponent's channel
   pusher.trigger(`${roomId}`, "update-score", {
     playerId,
     score,

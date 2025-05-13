@@ -6,7 +6,7 @@ import db from "../utils/supabase";
 import { useEffect } from "react";
 import { useRef } from "react";
 
-export default function Play({ roomId }) {
+export default function Play({ roomId, type }) {
   const { stats, handleInputChange, PARA } = usePlay();
   const channel = pusher.subscribe(roomId);
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function Play({ roomId }) {
   useEffect(() => {
     const handleTimerExpired = async () => {
       const currentStats = statsRef.current;
-      const response = await db.updateUser(
+      const response = type === "bot" ? null : await db.updateUser(
         playerEmail,
         currentStats.value.length === PARA.length ? currentStats.finalWpm : currentStats.wpm,
         currentStats.correct,
@@ -39,7 +39,7 @@ export default function Play({ roomId }) {
         matchPlayerCorrect: currentStats.correct,
         matchPlayerError: currentStats.error
       })
-      setElo(response.success);
+      type === "bot" ? null : setElo(response.success);
       navigate(`/result`);
     };
 

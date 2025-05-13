@@ -24,11 +24,9 @@ export default function Result() {
   const navigate = useNavigate();
   const channel = pusher.subscribe(`${matchRoomId}`);
 
-  // Cleanup function
   const cleanup = () => {
 
 
-    // Unsubscribe from channel
     if (channel) {
       channel.unbind_all();
       channel.unsubscribe();
@@ -61,7 +59,7 @@ export default function Result() {
     const updateScore = async () => {
       await api.post("/update-score", {
         roomId: matchRoomId,
-        playerId: playerId,  // Send our own ID
+        playerId: playerId,  
         score: {
           wpm: matchPlayerWpm,
           correct: matchPlayerCorrect,
@@ -71,7 +69,6 @@ export default function Result() {
     };
     updateScore();
 
-    // Cleanup on unmount
     return () => {
       cleanup();
     };
@@ -91,14 +88,12 @@ export default function Result() {
     }
   });
 
-  // Cleanup when component unmounts
   useEffect(() => {
     return () => {
       cleanup();
     };
   }, []);
 
-  // Cleanup when match ends (when navigating away)
   const handleMatchEnd = () => {
     cleanup();
     navigate("/find");

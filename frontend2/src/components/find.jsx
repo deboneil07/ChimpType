@@ -116,6 +116,7 @@ const DifficultyModal = ({ isOpen, onClose, onSelectDifficulty }) => {
   );
 };
 
+
 export default function FindMatch() {
   const { logout } = useKindeAuth();
 
@@ -142,7 +143,6 @@ export default function FindMatch() {
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [showContent, setShowContent] = useState(false);
-
   const [gameType, setGameType] = useState("");
 
   const { setTimer } = useStore();
@@ -151,6 +151,52 @@ export default function FindMatch() {
 
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [difficulty, setDifficulty] = useState(null);
+
+  const handleCancelMatch = async () => {
+  
+    setPlayerId(null);
+    setRoomId(null);
+    setOpponentId(null);
+    setShowCountdown(false);
+    setGameStarted(false);
+    setCountdown(5);
+    setGameType("");
+    setDifficulty(null);
+
+    
+    useMatchStore.getState().setMatchDetails({
+      playerId: null,
+      roomId: null,
+      opponentId: null
+    });
+
+    useScore.getState().setMatchPlayerDetails({
+      matchPlayerWpm: null,
+      matchPlayerCorrect: null,
+      matchPlayerError: null
+    });
+    useScore.getState().setMatchOpponentDetails({
+      matchOpponentWpm: null,
+      matchOpponentCorrect: null,
+      matchOpponentError: null
+    });
+
+    localStorage.removeItem('match-store');
+    localStorage.removeItem('participant-score');
+
+
+    if (channelRef.current) {
+      pusher.unsubscribe(channelRef.current.name);
+      channelRef.current = null;
+    }
+
+
+    try {
+      await api.get("/clean-match");
+    } catch (error) {
+      console.error("Error cleaning match:", error);
+    }
+  };
 
   useEffect(() => {
     setShowContent(true);
@@ -167,14 +213,11 @@ export default function FindMatch() {
         difficulty: difficultyLevel
       });
 
-      console.log(response)
-
       if(response.data.matched) {
         const newRoomId = response.data.roomId;
         const newOpponentId = response.data.opponentId;
 
         setCode(response.data?.randomBlock.code);
-        console.log(response.data)
         setMatchOpponentDetails({
           matchOpponentWpm: response.data.botScore.wpm,
           matchOpponentCorrect: response.data.botScore.correct,
@@ -183,21 +226,19 @@ export default function FindMatch() {
 
         setRoomId(newRoomId);
         setOpponentId(newOpponentId);
-        // console.log(newRoomId, newOpponentId, newPlayerId);
 
         subscribeToRoom(newRoomId, newPlayerId, newOpponentId, 'bot');
       }
-
     } catch(error) {
       console.error("Matchmaking failed", error);
+      setPlayerId(null); // Reset playerId on error
     }
   }
 
   async function findMatch() {
-    // setType("user")
     const newPlayerId = "chimp-" + user.id;
     setPlayerId(newPlayerId);
-
+    
     try {
       const response = await api.post("/find-match", {
         playerId: newPlayerId,
@@ -216,6 +257,7 @@ export default function FindMatch() {
       }
     } catch (error) {
       console.error("Matchmaking failed", error);
+      setPlayerId(null); // Reset playerId on error
     }
   }
 
@@ -269,6 +311,62 @@ export default function FindMatch() {
       setCode(data?.randomBlock.code);
     });
   }
+  
+  useEffect(() => {
+    window.addEventListener('beforeunload', function (e) {
+      e.preventDefault();
+    });
+    
+    
+    
+    window.addEventListener('unload', async function () {
+
+      useMatchStore.getState().setMatchDetails({
+        playerId: null,
+        roomId: null,
+        opponentId: null
+      });
+  
+      useScore.getState().setMatchPlayerDetails({
+        matchPlayerWpm: null,
+        matchPlayerCorrect: null,
+        matchPlayerError: null
+      });
+      useScore.getState().setMatchOpponentDetails({
+        matchOpponentWpm: null,
+        matchOpponentCorrect: null,
+        matchOpponentError: null
+      });
+      localStorage.removeItem('match-store');
+      localStorage.removeItem('participant-score');
+
+      await api.get("/clean-match")
+    });
+    
+    window.addEventListener('popstate', async function () {
+
+      useMatchStore.getState().setMatchDetails({
+        playerId: null,
+        roomId: null,
+        opponentId: null
+      });
+  
+      useScore.getState().setMatchPlayerDetails({
+        matchPlayerWpm: null,
+        matchPlayerCorrect: null,
+        matchPlayerError: null
+      });
+      useScore.getState().setMatchOpponentDetails({
+        matchOpponentWpm: null,
+        matchOpponentCorrect: null,
+        matchOpponentError: null
+      });
+      localStorage.removeItem('match-store');
+      localStorage.removeItem('participant-score');
+
+      await api.get("/clean-match")
+    });
+  },[])
 
   useEffect(() => {
     if (playerId && opponentId && roomId) {
@@ -392,7 +490,7 @@ export default function FindMatch() {
                 onClick={findMatch}
                 className="bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 text-black font-bold px-8 py-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95 text-xl"
               >
-                {playerId ? "Finding Match..." : "Find Match"}
+                {playerId && !difficulty ? "Finding Match..." : "Find Match"}
               </button>
 
               <button
@@ -400,10 +498,11 @@ export default function FindMatch() {
                 onClick={() => setShowDifficultyModal(true)}
                 className="disabled:opacity-50 text-yellow-400 border-2 border-yellow-400 font-bold px-8 py-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 active:scale-95 text-xl"
               >
-                {playerId ? "Finding Bot..." : "Challenge Bot"}
+                {playerId && difficulty ? "Finding Bot..." : "Challenge Bot"}
               </button>
             </div>
 
+            
             <DifficultyModal
               isOpen={showDifficultyModal}
               onClose={() => setShowDifficultyModal(false)}
@@ -413,7 +512,7 @@ export default function FindMatch() {
               }}
             />
 
-            {playerId && !opponentId && (
+            {playerId && !opponentId && !showCountdown && !gameStarted && (
               <div className="text-center space-y-4">
                 <div className="text-yellow-300 text-2xl font-bold animate-pulse">
                   Searching for opponent...
@@ -430,6 +529,12 @@ export default function FindMatch() {
                   ></div>
                 </div>
                 <p className="text-sm text-[#bbbbbb]">Your ID: {playerId}</p>
+                <button
+                  onClick={handleCancelMatch}
+                  className="mt-4 px-6 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-400/50 rounded-lg transition-colors"
+                >
+                  Cancel Search
+                </button>
               </div>
             )}
 

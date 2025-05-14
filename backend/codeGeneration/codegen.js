@@ -1,4 +1,4 @@
-export default function getRandomCodeBlock() {
+function getRandomCodeBlock() {
   const codeBlocks = [
     {
       language: "Python",
@@ -89,3 +89,6 @@ puts "Done looping!"
   //   randomBlock
   // })
 }
+
+
+module.exports = getRandomCodeBlock;

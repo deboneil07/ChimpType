@@ -3,7 +3,7 @@ const Pusher = require("pusher");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const uuid = require("short-unique-id");
-const { default: getRandomCodeBlock } = require("./codeGeneration/codegen.js");
+const  getRandomCodeBlock  = require("./codeGeneration/codegen.js");
 dotenv.config();
 
 const app = express();
@@ -72,6 +72,25 @@ const startTimer = (roomId, duration = 10) => {
     }
   }, 1000);
 };
+
+app.get("/clean-match", (req,res) => {
+  
+  try {
+
+ 
+    console.log(waitingPlayer)
+    
+
+    waitingPlayer = null;
+
+    console.log("after", waitingPlayer)
+    
+    res.status(200).json({ message: "player removed" });
+  } catch(error) {
+    res.json({message:error.message})
+  }
+  
+})
 
 app.post("/find-match", (req, res) => {
   const { playerId } = req.body;

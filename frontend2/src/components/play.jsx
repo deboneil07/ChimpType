@@ -136,7 +136,7 @@ export default function Play({ roomId, type }) {
 
         <div className="w-2/3 p-8 flex items-center justify-center">
           <div className="w-full max-w-4xl">
-            <div className="relative bg-[#1a1a1a] rounded-2xl p-8 shadow-xl border border-yellow-400/20">
+            <div className="relative bg-[#1a1a1a] rounded-2xl p-8 shadow-xl border border-yellow-400/20 max-h-[80vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-yellow-400/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-yellow-400/40">
               <div className="font-mono text-xl leading-[1.8] whitespace-pre-wrap">
                 {getStyledText()}
               </div>
@@ -144,7 +144,7 @@ export default function Play({ roomId, type }) {
                 value={stats.value}
                 onChange={handleInputChange}
                 onKeyDown={handleInputChange}
-                className="absolute top-0 left-0 w-full h-full p-8 bg-transparent text-transparent caret-yellow-400 resize-none focus:outline-none font-mono text-xl z-10 whitespace-pre-wrap leading-[1.8]"
+                className="absolute top-0 left-0 w-full h-full p-8 bg-transparent text-transparent caret-yellow-400 resize-none focus:outline-none font-mono text-xl z-10 whitespace-pre-wrap leading-[1.8] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#1a1a1a] [&::-webkit-scrollbar-thumb]:bg-yellow-400/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-yellow-400/40"
                 autoFocus
                 spellCheck="false"
                 autoComplete="off"
